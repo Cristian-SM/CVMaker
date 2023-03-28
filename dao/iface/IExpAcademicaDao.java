@@ -7,7 +7,7 @@ import java.util.List;
 public interface IExpAcademicaDao {
     ExpAcademica get(int id);
 
-    List<ExpAcademica> find();
+    List<ExpAcademica> find(int id);
 
     void delete(int id);
 

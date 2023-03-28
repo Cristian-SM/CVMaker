@@ -4,10 +4,7 @@ import cl.bennu.labs.cv.dao.iface.ICertificadoDao;
 import cl.bennu.labs.cv.domain.Certificado;
 import cl.bennu.labs.cv.jdbc.ConnectionUtils;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,12 +16,11 @@ public class CertificadoDao implements ICertificadoDao {
     Certificado c = null;
     @Override
     public Certificado get(int id) {
-
         try {
             // traer conexion
             connection = ConnectionUtils.getConnection();
 
-            String sql = "SELECT * FROM CERTIFICADO WHERE id = ? ";
+            String sql = "SELECT * FROM CERTIFICADO WHERE CURRICULUM_id = ? ";
             // preparar la sentencia
             pst = connection.prepareStatement(sql);
 
@@ -40,29 +36,34 @@ public class CertificadoDao implements ICertificadoDao {
                 c.setCurriculum_id(rs.getInt(4));
             }
 
-        }catch (Exception e){
-            System.out.println("ERROR: " + e.getMessage());
-        }
-        finally {
+        } catch (SQLNonTransientConnectionException e) {
+            System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
+        } catch (SQLTimeoutException e) {
+            System.err.println("Tiempo de espera agotado para la operación: " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Error en la ejecución de la consulta SQL: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Fallo de conexion" + e.getMessage());
+        } finally {
             ConnectionUtils.closeConnection(connection);
             return c;
         }
     }
 
     @Override
-    public List<Certificado> find() {
+    public List<Certificado> find(int id) {
         List<Certificado> lista = new ArrayList<>();
         try {
             // traer conexion
             connection = ConnectionUtils.getConnection();
 
-            String sql = "SELECT * FROM CERTIFICADO";
+            String sql = "SELECT * FROM CERTIFICADO WHERE CURRICULUM_id = ?";
 
-            // preparar la sentencia
-            st = connection.createStatement();
+            pst = connection.prepareStatement(sql);
 
-            // ejecuto consulta
-            rs = st.executeQuery(sql);
+            pst.setInt(1,id);
+
+            rs = pst.executeQuery();
 
             while (rs.next()) {
                 Certificado c = new Certificado();
@@ -72,10 +73,15 @@ public class CertificadoDao implements ICertificadoDao {
                 c.setCurriculum_id(rs.getInt(4));
                 lista.add(c);
             }
-        }catch (Exception e){
-            System.out.println("ERROR: " + e.getMessage());
-        }
-        finally {
+        } catch (SQLNonTransientConnectionException e) {
+            System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
+        } catch (SQLTimeoutException e) {
+            System.err.println("Tiempo de espera agotado para la operación: " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Error en la ejecución de la consulta SQL: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Fallo de conexion" + e.getMessage());
+        } finally {
             ConnectionUtils.closeConnection(connection);
         }
         return lista;
@@ -93,10 +99,15 @@ public class CertificadoDao implements ICertificadoDao {
             pst.setInt(1,id);
             pst.executeUpdate();
 
-        }catch (Exception e){
-            System.out.println("ERROR: " + e.getMessage());
-        }
-        finally {
+        } catch (SQLNonTransientConnectionException e) {
+            System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
+        } catch (SQLTimeoutException e) {
+            System.err.println("Tiempo de espera agotado para la operación: " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Error en la ejecución de la consulta SQL: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Fallo de conexion" + e.getMessage());
+        } finally {
             ConnectionUtils.closeConnection(connection);
         }
     }
@@ -114,10 +125,15 @@ public class CertificadoDao implements ICertificadoDao {
             pst.setInt(3, c.getCurriculum_id());
             pst.executeUpdate();
 
-        }catch (Exception e){
-            System.out.println("ERROR: " + e.getMessage());
-        }
-        finally {
+        } catch (SQLNonTransientConnectionException e) {
+            System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
+        } catch (SQLTimeoutException e) {
+            System.err.println("Tiempo de espera agotado para la operación: " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Error en la ejecución de la consulta SQL: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Fallo de conexion" + e.getMessage());
+        } finally {
             ConnectionUtils.closeConnection(connection);
         }
     }
@@ -140,10 +156,15 @@ public class CertificadoDao implements ICertificadoDao {
 
             pst.executeUpdate();
 
-        }catch (Exception e){
-            System.out.println("ERROR: " + e.getMessage());
-        }
-        finally {
+        } catch (SQLNonTransientConnectionException e) {
+            System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
+        } catch (SQLTimeoutException e) {
+            System.err.println("Tiempo de espera agotado para la operación: " + e.getMessage());
+        } catch (SQLException e) {
+            System.err.println("Error en la ejecución de la consulta SQL: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Fallo de conexion" + e.getMessage());
+        } finally {
             ConnectionUtils.closeConnection(connection);
         }
     }

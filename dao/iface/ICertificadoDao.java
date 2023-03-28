@@ -8,7 +8,7 @@ import java.util.List;
 public interface ICertificadoDao {
     Certificado get(int id);
 
-    List<Certificado> find();
+    List<Certificado> find(int id);
 
     void delete(int id);
 

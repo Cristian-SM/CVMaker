@@ -1,9 +1,9 @@
 package cl.bennu.labs.cv.domain;
 
-public class Person {
+public class Region {
 
     private Long id;
-    private String name;
+    private String nombre;
 
     public Long getId() {
         return id;
@@ -13,11 +13,11 @@ public class Person {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public String getNombre() {
+        return nombre;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
     }
 }

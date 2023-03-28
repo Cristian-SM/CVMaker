@@ -1,45 +1,35 @@
 package cl.bennu.labs.cv.dao.impl.jdbc;
 
-import cl.bennu.labs.cv.dao.iface.IExpAcademicaDao;
-import cl.bennu.labs.cv.domain.ExpAcademica;
+import cl.bennu.labs.cv.dao.iface.IPersonaDao;
+import cl.bennu.labs.cv.domain.Persona;
 import cl.bennu.labs.cv.jdbc.ConnectionUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ExpAcademicaDao implements IExpAcademicaDao {
+public class PersonaDao implements IPersonaDao {
+
+    Connection connection = null;
     PreparedStatement pst;
     ResultSet rs;
-    Statement st;
-    Connection connection = null;
-    ExpAcademica ea = null;
     @Override
-    public ExpAcademica get(int id) {
+    public Persona get(Long rut){
+        Persona persona = new Persona();
         try {
-            // traer conexion
             connection = ConnectionUtils.getConnection();
-
-            String sql = "SELECT * FROM EXP_ACADEMICA WHERE id = ? ";
-
-            // preparar la sentencia
+            String sql = "select * from PERSONA where rut = ?";
             pst = connection.prepareStatement(sql);
-
-            pst.setInt(1,id);
-
+            pst.setLong(1, rut);
             rs = pst.executeQuery();
+            while(rs.next()){
 
-            while (rs.next()) {
-                ea = new ExpAcademica();
-                ea.setId(rs.getInt(1));
-                ea.setGrado(rs.getString(2));
-                ea.setDescripcion(rs.getString(3));
-                ea.setFecha_inicio(rs.getString(4));
-                ea.setFecha_fin(rs.getString(5));
-                ea.setId_institucion(rs.getInt(6));
-                ea.setCurriculum_id(rs.getInt(7));
+                if(rs.getLong(1) == rut) {
+                    setRs(rs, persona);
+                    //System.out.println("Se encontro el rut");
+                    return persona;
+                }
             }
-
         } catch (SQLNonTransientConnectionException e) {
             System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
         } catch (SQLTimeoutException e) {
@@ -50,36 +40,27 @@ public class ExpAcademicaDao implements IExpAcademicaDao {
             System.out.println("Fallo de conexion" + e.getMessage());
         } finally {
             ConnectionUtils.closeConnection(connection);
-            return ea;
+            return persona;
         }
     }
-
     @Override
-    public List<ExpAcademica> find(int id) {
-        List<ExpAcademica> lista = new ArrayList<>();
+    public List<Persona> find(){
+        List<Persona> personaList = new ArrayList<>();;
         try {
             // traer conexion
             connection = ConnectionUtils.getConnection();
 
-            String sql = "SELECT * FROM EXP_ACADEMICA WHERE CURRICULUM_id = ? ";
+            String sql = "select * from PERSONA;";
 
             // preparar la sentencia
-            pst = connection.prepareStatement(sql);
+            Statement statement = connection.createStatement();
 
-            pst.setInt(1,id);
-
-            rs = pst.executeQuery();
-
+            // ejecuto consulta
+            ResultSet rs = statement.executeQuery(sql);
             while (rs.next()) {
-                ExpAcademica ea = new ExpAcademica();
-                ea.setId(rs.getInt(1));
-                ea.setGrado(rs.getString(2));
-                ea.setDescripcion(rs.getString(3));
-                ea.setFecha_inicio(rs.getString(4));
-                ea.setFecha_fin(rs.getString(5));
-                ea.setId_institucion(rs.getInt(6));
-                ea.setCurriculum_id(rs.getInt(7));
-                lista.add(ea);
+                Persona persona = new Persona();
+                setRs(rs, persona);
+                personaList.add(persona);
             }
         } catch (SQLNonTransientConnectionException e) {
             System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
@@ -92,21 +73,41 @@ public class ExpAcademicaDao implements IExpAcademicaDao {
         } finally {
             ConnectionUtils.closeConnection(connection);
         }
-        return lista;
+        return personaList;
+    }
+
+    private void setRs(ResultSet rs, Persona persona) throws SQLException {
+        persona.setRut(rs.getLong(1));
+        persona.setDv(rs.getString(2).charAt(0));
+        persona.setNombreCompleto(rs.getString(3));
+        persona.setFechaNacimiento(rs.getString(4));
+        persona.setFoto(rs.getBlob(5));
+        persona.setEstadoCivil(rs.getInt(6));
+        persona.setSexo(rs.getInt(7));
+        persona.setNacionalidad(rs.getInt(8));
+        persona.setComuna(rs.getInt(9));
+    }
+
+    private void setPst(PreparedStatement pst, Persona persona) throws SQLException {
+        pst.setLong(1, persona.getRut());
+        pst.setString(2, String.valueOf(persona.getDv()));
+        pst.setString(3, persona.getNombreCompleto());
+        pst.setString(4, persona.getFechaNacimiento());
+        pst.setBlob(5, persona.getFoto());
+        pst.setInt(6, persona.getEstadoCivil());
+        pst.setInt(7, persona.getSexo());
+        pst.setInt(8, persona.getNacionalidad());
+        pst.setInt(9, persona.getComuna());
     }
 
     @Override
-    public void delete(int id) {
-        try {
-            // traer conexion
+    public void delete(Long rut){
+        String sql = "delete from PERSONA where rut = ?";
+        try{
             connection = ConnectionUtils.getConnection();
-
-            String sql = "DELETE FROM EXP_ACADEMICA WHERE id = ? ";
-
             pst = connection.prepareStatement(sql);
-            pst.setInt(1,id);
+            pst.setLong(1, rut);
             pst.executeUpdate();
-
         } catch (SQLNonTransientConnectionException e) {
             System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
         } catch (SQLTimeoutException e) {
@@ -121,23 +122,13 @@ public class ExpAcademicaDao implements IExpAcademicaDao {
     }
 
     @Override
-    public void insert(ExpAcademica a) {
-        try {
-            // traer conexion
+    public void insert(Persona persona){
+        String sql = "insert into PERSONA(rut, dv, nombre_completo, fecha_nacimiento, foto, ESTADO_CIVIL_id, SEXO_id, NACIONALIDAD_id, COMUNA_id) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        try{
             connection = ConnectionUtils.getConnection();
-
-            String sql = "INSERT INTO EXP_ACADEMICA (grado, descripcion, fecha_inicio, fecha_fin, INSTITUCION_id, CURRICULUM_id) " +
-                    " VALUES (?,?,?,?,?,?) ";
-
             pst = connection.prepareStatement(sql);
-            pst.setString(1, a.getGrado());
-            pst.setString(2, a.getDescripcion());
-            pst.setString(3, a.getFecha_inicio());
-            pst.setString(4, a.getFecha_fin());
-            pst.setInt(5, a.getId_institucion());
-            pst.setInt(6, a.getCurriculum_id());
+            setPst(pst, persona);
             pst.executeUpdate();
-
         } catch (SQLNonTransientConnectionException e) {
             System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
         } catch (SQLTimeoutException e) {
@@ -152,28 +143,14 @@ public class ExpAcademicaDao implements IExpAcademicaDao {
     }
 
     @Override
-    public void update(ExpAcademica a) {
+    public void update(Long rut, String value) {
+        String sql = "update PERSONA set nombre_completo = ? where rut = ?";
         try {
-            // traer conexion
             connection = ConnectionUtils.getConnection();
-
-            String sql = "UPDATE EXP_ACADEMICA SET grado = ? , descripcion = ? ," +
-                    "                    fecha_inicio = ? , fecha_fin = ? ," +
-                    "                    INSTITUCION_id = ? , CURRICULUM_id = ?" +
-                    "                    WHERE id = ?";
-
             pst = connection.prepareStatement(sql);
-
-            pst.setString(1, a.getGrado());
-            pst.setString(2, a.getDescripcion());
-            pst.setString(3, a.getFecha_inicio());
-            pst.setString(4, a.getFecha_fin());
-            pst.setInt(5, a.getId_institucion());
-            pst.setInt(6, a.getCurriculum_id());
-            pst.setInt(7, a.getId());
-
+            pst.setLong(2, rut);
+            pst.setString(1, value);
             pst.executeUpdate();
-
         } catch (SQLNonTransientConnectionException e) {
             System.err.println("Error al establecer la conexión con la base de datos: " + e.getMessage());
         } catch (SQLTimeoutException e) {
@@ -186,4 +163,5 @@ public class ExpAcademicaDao implements IExpAcademicaDao {
             ConnectionUtils.closeConnection(connection);
         }
     }
+
 }
